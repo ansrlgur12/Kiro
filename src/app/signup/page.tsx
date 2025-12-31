@@ -58,13 +58,13 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="max-w-md w-full space-y-8 p-8 bg-white rounded-lg shadow-md">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4 sm:px-6 lg:px-8 py-12">
+      <div className="w-full max-w-2xl space-y-8 p-10 sm:p-12 bg-white dark:bg-gray-800 rounded-lg shadow-md">
         <div>
-          <h2 className="text-center text-3xl font-bold text-gray-900">
+          <h2 className="text-center text-4xl font-bold text-gray-900 dark:text-white">
             Kiro
           </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
+          <p className="mt-3 text-center text-base text-gray-600 dark:text-gray-400">
             새 계정 만들기
           </p>
         </div>
@@ -78,7 +78,7 @@ export default function SignupPage() {
 
           <div className="space-y-4">
             <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 이름
               </label>
               <input
@@ -86,7 +86,7 @@ export default function SignupPage() {
                 name="name"
                 type="text"
                 required
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                className="mt-1 block w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-base focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                 placeholder="홍길동"
                 value={formData.user_name}
                 onChange={(e) => setFormData({ ...formData, user_name: e.target.value })}
@@ -94,7 +94,7 @@ export default function SignupPage() {
             </div>
 
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 이메일
               </label>
               <input
@@ -102,7 +102,7 @@ export default function SignupPage() {
                 name="email"
                 type="email"
                 required
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                className="mt-1 block w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-base focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                 placeholder="example@email.com"
                 value={formData.user_email}
                 onChange={(e) => setFormData({ ...formData, user_email: e.target.value })}
@@ -110,7 +110,7 @@ export default function SignupPage() {
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 비밀번호
               </label>
               <input
@@ -119,7 +119,7 @@ export default function SignupPage() {
                 type="password"
                 required
                 minLength={6}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                className="mt-1 block w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-base focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                 placeholder="최소 6자 이상"
                 value={formData.user_password}
                 onChange={(e) => setFormData({ ...formData, user_password: e.target.value })}
@@ -127,7 +127,7 @@ export default function SignupPage() {
             </div>
 
             <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 비밀번호 확인
               </label>
               <input
@@ -136,7 +136,7 @@ export default function SignupPage() {
                 type="password"
                 required
                 minLength={6}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                className="mt-1 block w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-base focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                 placeholder="비밀번호 재입력"
                 value={formData.confirmPassword}
                 onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
@@ -147,14 +147,14 @@ export default function SignupPage() {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-gray-400 disabled:cursor-not-allowed"
+            className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-gray-400 disabled:cursor-not-allowed"
           >
             {isLoading ? '가입 중...' : '회원가입'}
           </button>
 
           <div className="text-center text-sm">
-            <span className="text-gray-600">이미 계정이 있으신가요? </span>
-            <Link href="/login" className="text-blue-600 hover:text-blue-500 font-medium">
+            <span className="text-gray-600 dark:text-gray-400">이미 계정이 있으신가요? </span>
+            <Link href="/login" className="text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300 font-medium">
               로그인
             </Link>
           </div>
