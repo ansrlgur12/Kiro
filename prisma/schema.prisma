@@ -1,14 +1,222 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
-  provider = "prisma-client"
-  output   = "../app/generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mysql"
 }
+
+// ===== ENUMS =====
+
+enum UserStatus {
+  ACTIVE      // 활성
+  INACTIVE    // 비활성 (휴면)
+  SUSPENDED   // 정지
+  DELETED     // 탈퇴
+}
+
+enum WorkspaceStatus {
+  ACTIVE
+  ARCHIVED    // 보관됨
+  DELETED
+}
+
+enum WorkspaceMemberRole {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
+enum WorkspaceMemberStatus {
+  ACTIVE
+  INVITED     // 초대됨 (아직 수락 안함)
+  INACTIVE
+}
+
+enum PageStatus {
+  ACTIVE
+  DELETED
+}
+
+enum BlockType {
+  TEXT
+  HEADING
+  LIST
+  CODE
+  IMAGE
+}
+
+enum PermissionLevel {
+  VIEW
+  COMMENT
+  EDIT
+}
+
+enum CommentStatus {
+  ACTIVE
+  DELETED
+}
+
+// ===== MODELS =====
+
+// 사용자
+model User {
+  user_id            String      @id @default(uuid())
+  user_email         String      @unique
+  user_password_hash String
+  user_name          String
+  user_avatar_url    String?     @db.Text
+  user_status        UserStatus  @default(ACTIVE)
+  reg_datetime       DateTime    @default(now())
+  upd_datetime       DateTime    @updatedAt
+  del_datetime       DateTime?
+
+  // Relations
+  owned_workspaces      Workspace[]       @relation("WorkspaceOwner")
+  workspace_memberships WorkspaceMember[]
+  created_pages         Page[]            @relation("PageCreator")
+  comments              Comment[]
+  mentions              Mention[]         @relation("MentionedUser")
+  page_permissions      PagePermission[]
+
+  @@map("user")
+}
+
+// 워크스페이스
+model Workspace {
+  workspace_id       String           @id @default(uuid())
+  workspace_name     String
+  workspace_icon     String?
+  workspace_owner_id String
+  workspace_status   WorkspaceStatus  @default(ACTIVE)
+  reg_datetime       DateTime         @default(now())
+  upd_datetime       DateTime         @updatedAt
+  del_datetime       DateTime?
+
+  // Relations
+  owner   User              @relation("WorkspaceOwner", fields: [workspace_owner_id], references: [user_id], onDelete: Cascade)
+  members WorkspaceMember[]
+  pages   Page[]
+
+  @@map("workspace")
+}
+
+// 워크스페이스 멤버
+model WorkspaceMember {
+  workspace_member_id           String                 @id @default(uuid())
+  workspace_member_workspace_id String
+  workspace_member_user_id      String
+  workspace_member_role         WorkspaceMemberRole
+  workspace_member_status       WorkspaceMemberStatus  @default(ACTIVE)
+  reg_datetime                  DateTime               @default(now())
+  upd_datetime                  DateTime               @updatedAt
+
+  // Relations
+  workspace Workspace @relation(fields: [workspace_member_workspace_id], references: [workspace_id], onDelete: Cascade)
+  user      User      @relation(fields: [workspace_member_user_id], references: [user_id], onDelete: Cascade)
+
+  @@unique([workspace_member_workspace_id, workspace_member_user_id])
+  @@map("workspace_member")
+}
+
+// 페이지
+model Page {
+  page_id           String     @id @default(uuid())
+  page_workspace_id String
+  page_parent_id    String?
+  page_title        String
+  page_icon         String?
+  page_cover_image  String?    @db.Text
+  page_position     Int
+  page_created_by   String
+  page_status       PageStatus @default(ACTIVE)
+  reg_datetime      DateTime   @default(now())
+  upd_datetime      DateTime   @updatedAt
+  del_datetime      DateTime?
+
+  // Relations
+  workspace          Workspace        @relation(fields: [page_workspace_id], references: [workspace_id], onDelete: Cascade)
+  creator            User             @relation("PageCreator", fields: [page_created_by], references: [user_id])
+  parent             Page?            @relation("PageHierarchy", fields: [page_parent_id], references: [page_id], onDelete: Cascade)
+  children           Page[]           @relation("PageHierarchy")
+  blocks             Block[]
+  permissions        PagePermission[]
+  comments           Comment[]
+
+  @@map("page")
+}
+
+// 페이지 콘텐츠 블록
+model Block {
+  block_id         String    @id @default(uuid())
+  block_page_id    String
+  block_type       BlockType
+  block_content    Json
+  block_position   Int
+  reg_datetime     DateTime  @default(now())
+  upd_datetime     DateTime  @updatedAt
+
+  // Relations
+  page     Page      @relation(fields: [block_page_id], references: [page_id], onDelete: Cascade)
+  comments Comment[]
+
+  @@map("block")
+}
+
+// 페이지 권한
+model PagePermission {
+  page_permission_id         String          @id @default(uuid())
+  page_permission_page_id    String
+  page_permission_user_id    String?
+  page_permission_level      PermissionLevel
+  page_permission_share_link_token String?   @unique
+  page_permission_expires_at DateTime?
+  reg_datetime               DateTime        @default(now())
+  upd_datetime               DateTime        @updatedAt
+
+  // Relations
+  page Page  @relation(fields: [page_permission_page_id], references: [page_id], onDelete: Cascade)
+  user User? @relation(fields: [page_permission_user_id], references: [user_id], onDelete: Cascade)
+
+  @@map("page_permission")
+}
+
+// 댓글
+model Comment {
+  comment_id                String        @id @default(uuid())
+  comment_page_id           String
+  comment_block_id          String?
+  comment_user_id           String
+  comment_content           String        @db.Text
+  comment_parent_comment_id String?
+  comment_status            CommentStatus @default(ACTIVE)
+  reg_datetime              DateTime      @default(now())
+  upd_datetime              DateTime      @updatedAt
+  del_datetime              DateTime?
+
+  // Relations
+  page           Page      @relation(fields: [comment_page_id], references: [page_id], onDelete: Cascade)
+  block          Block?    @relation(fields: [comment_block_id], references: [block_id], onDelete: Cascade)
+  user           User      @relation(fields: [comment_user_id], references: [user_id], onDelete: Cascade)
+  parent_comment Comment?  @relation("CommentReplies", fields: [comment_parent_comment_id], references: [comment_id], onDelete: Cascade)
+  replies        Comment[] @relation("CommentReplies")
+  mentions       Mention[]
+
+  @@map("comment")
+}
+
+// 멘션
+model Mention {
+  mention_id                String   @id @default(uuid())
+  mention_comment_id        String
+  mention_mentioned_user_id String
+  mention_is_read           Boolean  @default(false)
+  reg_datetime              DateTime @default(now())
+
+  // Relations
+  comment        Comment @relation(fields: [mention_comment_id], references: [comment_id], onDelete: Cascade)
+  mentioned_user User    @relation("MentionedUser", fields: [mention_mentioned_user_id], references: [user_id], onDelete: Cascade)
+
+  @@map("mention")
+}
+
